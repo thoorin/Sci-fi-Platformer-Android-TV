@@ -20,6 +20,20 @@ local maxRecords = {0,200,650,1025,1275,300,650,850,1500,2475}
 
 local selectedLevel = 1
 
+local indentOFElement = display.actualContentWidth/5.45
+local elementOriginX = display.actualContentWidth/8.67
+
+local indentOFElementEnv0 = display.actualContentWidth/3.8
+local elementOriginXEnv0 = display.actualContentWidth*0.38
+
+local arrowY = display.actualContentHeight*0.1+5
+local leftArrowX = display.screenOriginX + display.actualContentWidth*0.14
+local rightArrowX = display.screenOriginX + display.actualContentWidth*0.84
+
+local selectorY = 240
+
+local selectorPosition = "low"
+
 local background
 
 local function cleanMap()
@@ -53,7 +67,7 @@ function createMap( environment, selectorPosition )
                 planet:setFillColor(0,0,0.8)
                 planet:setEmbossColor( color )
 
-                arrow = creator.createArrowRight(display.screenOriginX + display.actualContentWidth*0.84,display.actualContentHeight*0.1+5) 
+                arrow = creator.createArrowRight(rightArrowX,arrowY) 
                 background.fill.effect = "generator.radialGradient"
  
                 background.fill.effect.color1 = { 1, 0.5, 1, 1 }
@@ -65,8 +79,8 @@ function createMap( environment, selectorPosition )
                 numberOfElements = 2
         elseif (environment == 1) then
                 planet.text = "Grass Planet"
-                arrow = creator.createArrowRight(display.screenOriginX + display.actualContentWidth*0.84,display.actualContentHeight*0.1+5) 
-                arrow2 = creator.createArrowLeft(display.screenOriginX + display.actualContentWidth*0.14,display.actualContentHeight*0.1+5) 
+                arrow = creator.createArrowRight(rightArrowX,arrowY) 
+                arrow2 = creator.createArrowLeft(leftArrowX,arrowY) 
                 background.fill.effect = "generator.radialGradient"
  
                 background.fill.effect.color1 = { 0.5, 0.5, 1, 1 }
@@ -83,7 +97,7 @@ function createMap( environment, selectorPosition )
                 planet:setFillColor(1,1,0.4)
                 planet:setEmbossColor( color )
 
-                arrow = creator.createArrowLeft(display.screenOriginX + display.actualContentWidth*0.14,display.actualContentHeight*0.1+5) 
+                arrow = creator.createArrowLeft(leftArrowX,arrowY) 
                 background.fill.effect = "generator.radialGradient"
  
                 background.fill.effect.color1 = { 1, 0.5, 0, 1 }
@@ -96,14 +110,17 @@ function createMap( environment, selectorPosition )
         end
         table.insert(ar,arrow)
 
-        selector = display.newRect(sceneGroup, 200*selectorPosition - 65, 240, 150, 250)
+        selector = display.newRect(sceneGroup, display.screenOriginX + indentOFElement*(selectorPosition-1) + elementOriginX, selectorY, 150, 250)
         selector.strokeWidth = 3
         selector:setStrokeColor( 1, 1, 1 )
         selector:setFillColor( 0, 0, 0, 0 )
         table.insert(ar,selector)
+        if (environment == 0) then
+                selector.x = selector.x - 23
+        end
 
         for i=0,numberOfElements-1 do
-                local elementX = display.screenOriginX + display.actualContentWidth/8.67 + i * display.actualContentWidth/5.45
+                local elementX = display.screenOriginX + elementOriginX + i * indentOFElement
                 local recordX = elementX+5
                 local levelName
                 if (environment == 0) then
@@ -153,7 +170,7 @@ function createMap( environment, selectorPosition )
                 if (environment == 0) then
                         recordInPercentage.text = ""
                         levelTitle:setTextColor( 0,0,1 )
-                        elementX = display.screenOriginX + display.actualContentWidth*0.38 + i * display.actualContentWidth/3.8
+                        elementX = display.screenOriginX + elementOriginXEnv0 + i * indentOFElementEnv0
                         levelTitle.x = elementX
                         if (i == 0) then
                                 state = "tutorial"
@@ -213,38 +230,66 @@ function scene:show( event )
 
                 local function onKeyEvent( event )
                         if (event.phase == "down") then
-                                local indent = 200
+                                if (event.keyName == "left" or event.keyName == "right") then
+                                        if (selectorPosition == "low") then
+                                                local indent = indentOFElement
 
-                                local levelChange = 1
+                                                local levelChange = 1
 
-                                if (event.keyName == "left") then
-                                        levelChange = -levelChange
+                                                if (event.keyName == "left") then
+                                                        levelChange = -levelChange
+                                                end
+
+                                                if ((selectedLevel ~= 10 or levelChange == -1) and (selectedLevel ~=-1 or levelChange == 1)) then
+                                                        if (selectedLevel == 1 and levelChange == -1) then
+                                                                composer.setVariable("env",0)
+                                                                createMap(0,4)
+                                                                indent = 0
+                                                        elseif (selectedLevel == 5 and levelChange == 1) then
+                                                                composer.setVariable("env",2)
+                                                                createMap(2,1)
+                                                                indent = 0
+                                                        elseif (selectedLevel == 6 and levelChange == -1) then
+                                                                composer.setVariable("env",1)
+                                                                createMap(1,5)
+                                                                indent = 0
+                                                        elseif (selectedLevel == 0 and levelChange == 1) then
+                                                                composer.setVariable("env",1)
+                                                                createMap(1,1)
+                                                                indent = 0
+                                                        elseif (selectedLevel <=0 )then
+                                                                indent = indentOFElementEnv0
+                                                        end
+                                                        selectedLevel = selectedLevel + levelChange
+                                                        selector.x = selector.x + indent*levelChange
+                                                end
+
+                                                print(selectedLevel)
+                                        else
+                                                if (event.keyName == "right" and selectedLevel < 6) then
+                                                        selector.x = rightArrowX
+                                                elseif (selectedLevel > 0) then
+                                                        selector.x = leftArrowX
+                                                end
+                                        end
+                                elseif (event.keyName == "up") then
+                                        selector.y = arrowY
+                                        selector.x = selectedLevel <=0 and rightArrowX or leftArrowX
+                                        selector.height = 30
+                                        selectorPosition = "high"
+                                elseif (event.keyName == "down") then
+                                        selector.height = 250
+                                        selector.x = selectedLevel <= 0 and display.screenOriginX + indentOFElement*3 + elementOriginX or display.screenOriginX + elementOriginX
+                                        selector.y = selectorY
+                                        if (selectedLevel <= 0) then
+                                                selectedLevel = 0
+                                        elseif (selectedLevel < 6) then
+                                                selectedLevel = 1
+                                        else
+                                                selectedLevel = 6
+                                        end
+                                        selectorPosition = "low"
                                 end
-
-                                if ((selectedLevel ~= 10 or levelChange == -1) and (selectedLevel ~=-1 or levelChange == 1)) then
-                                        if (selectedLevel == 1 and levelChange == -1) then
-                                                composer.setVariable("env",0)
-                                                createMap(0,4)
-                                                indent = 0
-                                        elseif (selectedLevel == 5 and levelChange == 1) then
-                                                composer.setVariable("env",2)
-                                                createMap(2,1)
-                                                indent = 0
-                                        elseif (selectedLevel == 6 and levelChange == -1) then
-                                                composer.setVariable("env",1)
-                                                createMap(1,5)
-                                                indent = 0
-                                        elseif (selectedLevel == 0 and levelChange == 1) then
-                                                composer.setVariable("env",1)
-                                                createMap(1,1)
-                                                indent = 0
-                                        end   
-                                        selectedLevel = selectedLevel + levelChange
-                                        selector.x = selector.x + indent*levelChange
-                                end
-
-
-                                print(selectedLevel)
                         end
                 end
                 Runtime:addEventListener( "key", onKeyEvent )
