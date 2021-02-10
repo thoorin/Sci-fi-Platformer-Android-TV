@@ -30,6 +30,8 @@ local arrowY = display.actualContentHeight*0.1+5
 local leftArrowX = display.screenOriginX + display.actualContentWidth*0.14
 local rightArrowX = display.screenOriginX + display.actualContentWidth*0.84
 
+local wrongSound = audio.loadSound( "wrong.mp3" )
+
 local selectorY = 240
 
 local selectorPosition = "low"
@@ -275,11 +277,13 @@ function scene:show( event )
                                 elseif (event.keyName == "up") then
                                         selector.y = arrowY
                                         selector.x = selectedLevel <=0 and rightArrowX or leftArrowX
-                                        selector.height = 30
+                                        selector.height = 70
+                                        selector.width = 70
                                         selectorPosition = "high"
                                 elseif (event.keyName == "down") then
                                         selector.height = 250
-                                        selector.x = selectedLevel <= 0 and display.screenOriginX + indentOFElement*3 + elementOriginX or display.screenOriginX + elementOriginX
+                                        selector.width = 150
+                                        selector.x = selectedLevel <= 0 and display.screenOriginX + indentOFElement*3 + elementOriginX - 23 or display.screenOriginX + elementOriginX
                                         selector.y = selectorY
                                         if (selectedLevel <= 0) then
                                                 selectedLevel = 0
@@ -289,6 +293,57 @@ function scene:show( event )
                                                 selectedLevel = 6
                                         end
                                         selectorPosition = "low"
+                                elseif (event.keyName == "enter") then
+                                        if (selectorPosition == "high") then
+                                                if (selector.x < 500) then
+                                                        if (selectedLevel > 5) then
+                                                                composer.setVariable("env",1)
+                                                                createMap(1,1)
+                                                                selectedLevel = 1
+                                                        else
+                                                                composer.setVariable("env",0)
+                                                                createMap(0,4)
+                                                                selectedLevel = 0
+                                                        end
+                                                else 
+                                                        if (selectedLevel < 1) then
+                                                                composer.setVariable("env",1)
+                                                                createMap(1,1)
+                                                                selectedLevel = 1
+                                                        else
+                                                                composer.setVariable("env",2)
+                                                                createMap(2,1)
+                                                                selectedLevel = 6
+                                                        end
+                                                end
+                                                selectorPosition = "low"
+                                        else
+                                                if (selectedLevel == 0) then
+                                                        composer.gotoScene( "credits" )
+                                                        composer.removeScene("map", true)
+                                                        audio.play(clickSound)
+                                                        Runtime:removeEventListener("key", onKeyEvent)
+                                                elseif (selectedLevel == -1)then
+                                                        composer.gotoScene( "level" )
+                                                        composer.removeScene("map", true)
+                                                        composer.setVariable( "lvl", 0 )
+                                                        audio.play(clickSound)
+                                                        Runtime:removeEventListener("key", onKeyEvent)
+                                                else
+                                                        local curLevel = fileHandler.getCurrentLevel()
+                                                        if (selectedLevel > curLevel) then
+                                                                audio.play(wrongSound)
+                                                        else
+                                                                composer.gotoScene( "level" )
+                                                                composer.removeScene("map", true)
+                                                                composer.setVariable( "lvl", selectedLevel )
+                                                                audio.play(clickSound) 
+                                                                Runtime:removeEventListener("key", onKeyEvent)
+                                                                selectedLevel = 1
+                                                        end
+                                                end
+
+                                        end
                                 end
                         end
                 end
@@ -306,6 +361,7 @@ function scene:hide( event )
 	if ( phase == "will" ) then
         -- Code here runs when the scene is on screen (but is about to go off screen)
                 cleanMap()
+
 
         elseif ( phase == "did" ) then
 

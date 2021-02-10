@@ -227,7 +227,7 @@ M.playerEvent = function( event )
             pressed = true
             if (event.keyName == "left") then
                 M.jump()
-            elseif (event.keyName == "right") then
+            elseif (shoots == false and event.keyName == "right") then
                     M.shoot()
                     shoots = true
             end

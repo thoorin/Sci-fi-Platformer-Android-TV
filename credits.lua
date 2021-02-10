@@ -23,10 +23,12 @@ local function inAndOut( group )
     delayTime = delayTime + 7400
 end
 
-local function tapEvent()
-    composer.gotoScene("map")
-    Runtime:removeEventListener( "touch", tapEvent)
-    composer.removeScene( "credits", true )
+local function keyEvent( event )
+    if (event.phase == "down") then
+        composer.gotoScene("map")
+        composer.removeScene( "credits", true )
+        Runtime:removeEventListener( "key", keyEvent)
+    end
 end
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -129,7 +131,7 @@ function scene:show( event )
 
             timer.performWithDelay(delayTime, function() composer.gotoScene("map") end)
 
-            Runtime:addEventListener( "touch", tapEvent)
+            Runtime:addEventListener( "key", keyEvent)
 
         elseif ( phase == "did" ) then
         end
