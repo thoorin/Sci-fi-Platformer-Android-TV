@@ -15,9 +15,6 @@ local elements = {}
 local builder 
 local mainGroup = display.newGroup()
 local composer = require("composer")
-local pauseIcon
-local playIcon
-
 local selectorPosition
 
 M.setGame = function(g)
@@ -45,64 +42,6 @@ end
 M.setRecord= function()
     record = fileHandler.getRecord(level)
     if (record == nil) then record = 0 end
-end
-
-M.pauseIcon = function()
-    local pause = display.newImageRect(mainGroup, "Pause.png",28,49)
-    pause.myName = "pause"
-    pause.x = display.safeScreenOriginX + display.actualContentWidth * 0.05
-    pause.y = display.actualContentHeight * 0.08
-    pause:scale(0.85,0.85)
-
-    local function onObjectTap( event )   
-        if (game.getGame()) then
-            local player = game:getPlayer()
-            player:pause()
-            local vx,vy = player:getLinearVelocity()
-            player.lastVelocity = vy
-            player:setLinearVelocity(0,0)
-            player.gravityScale = 0
-            game.setGame(false)
-            game.pause()
-            timer.pauseAll()
-            display.remove(pause)
-            pauseIcon = nil
-            M.playIcon()
-        end
-
-        return true
-    end
-
-    pause:addEventListener( "tap", onObjectTap )
-    pause.onObjectTap = onObjectTap
-    pauseIcon = pause
-end
-
-M.playIcon = function()
-    local play = display.newImageRect(mainGroup, "Play.png",34,51)
-    play.x = display.safeScreenOriginX + display.actualContentWidth * 0.05
-    play.y = display.actualContentHeight * 0.08
-    play:scale(0.85,0.85)
-
-    local function onObjectTap( event )  
-        local player = game:getPlayer()
-        player:play()
-        player:setLinearVelocity(0,player.lastVelocity+0.1)
-        player.gravityScale = 1 
-        game.setGame(true)
-        game.setShoots(false)
-        game.unpause()
-        display.remove(play)
-        playIcon = nil
-        M.pauseIcon()
-        timer.resumeAll()
-
-        return true
-    end
-
-    play:addEventListener( "tap", onObjectTap )
-    play.onObjectTap = onObjectTap
-    playIcon = play
 end
 
 M.screen = function()
@@ -333,11 +272,7 @@ M.deathScreen = function()
             elseif (event.keyName == "enter") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
-                    local activeIcon = pauseIcon == nil and playIcon or pauseIcon
                     creator.cancelEnemyTimers()
-            
-                    activeIcon:removeEventListener("tap",activeIcon.onObjectTap)
-                    display.remove(activeIcon)
                     composer.gotoScene("map")
 
                     for i in ipairs(elements) do 
@@ -349,11 +284,7 @@ M.deathScreen = function()
                     audio.stop(31)
                     audio.play(clickSound)
                 else 
-                    local activeIcon = pauseIcon == nil and playIcon or pauseIcon
                     creator.cancelEnemyTimers()
-
-                    activeIcon:removeEventListener("tap",activeIcon.onObjectTap)
-                    display.remove(activeIcon)
                     
                     if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
                     game.setCanJump(false)

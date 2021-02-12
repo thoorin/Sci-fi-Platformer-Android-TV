@@ -93,7 +93,6 @@ function scene:show( event )
                 interface.setBuilder(builder)
                 interface.setCollisionHandler(collisionHandler)
                 interface.setFileHandler(fileHandler)
-                interface.pauseIcon()
 
                 collisionHandler.setGame(game)
                 collisionHandler.setCreator(creator)

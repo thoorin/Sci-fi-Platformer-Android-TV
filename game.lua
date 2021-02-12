@@ -16,6 +16,7 @@ local shootTimer
 local shoots = false
 local creator
 local stopped
+local paused = false
 
 local pressed
 local game = true
@@ -125,42 +126,6 @@ M.stopping = function()
     end
 end
 
-M.pause = function()
-    for i in ipairs(blocksArray) do 
-        local element = blocksArray[i]
-        local vx,vy = element:getLinearVelocity()
-
-        transition.pauseAll()
-
-        if (element.objectType == "sprite") then
-            element.wasPlaying = element.isPlaying
-            element:pause() 
-        elseif (element.objectType == "emitter") then
-            element:pause()
-        end
-        
-        element.lastVelocityX = vx
-        element.lastVelocityY = vy
-        element:setLinearVelocity( 0, 0) 
-    end
-end
-
-M.unpause = function()
-    for i in ipairs(blocksArray) do 
-        local element = blocksArray[i]
-        local vx,vy = element.lastVelocityX,element.lastVelocityY
-
-        transition.resumeAll()
-
-        if (element.objectType == "sprite" and element.wasPlaying) then
-            element:play() 
-        elseif (element.objectType == "emitter" and element.isVisible) then
-            element:start()
-        end
-        element:setLinearVelocity( vx, vy) 
-    end
-end
-
 M.death = function()   
     game = false
     ply:setSequence("death")
@@ -201,25 +166,77 @@ end
 
 
 M.gameLoop = function()
-    if (game == true) then
-    if (ply.y > display.contentHeight+10) then
-         M.death() 
-    end
+        if (game == true) then
+        if (ply.y > display.contentHeight+10) then
+            M.death() 
+        end
 
-    if (ply.x < 0) then
-        M.death() 
-    end
+        if (ply.x < 0) then
+            M.death() 
+        end
 
+        local vx,vy = ply:getLinearVelocity()
+        if (ply.x < composer.getVariable("playerStartingPosition") - 0.1 and stopped == false and vy == 0) then
+            print("Minus 1, before: "..ply.y)
+            ply.y = ply.y - 1
+            ply.x = composer.getVariable("playerStartingPosition")
+            ply:setLinearVelocity(0,0)
+        end    
+    end
+end
+
+local function pause()
+    ply:pause()
     local vx,vy = ply:getLinearVelocity()
-    if (ply.x < composer.getVariable("playerStartingPosition") - 0.1 and stopped == false and vy == 0) then
-        print("Minus 1, before: "..ply.y)
-        ply.y = ply.y - 1
-        ply.x = composer.getVariable("playerStartingPosition")
-        ply:setLinearVelocity(0,0)
-    end    
-end
+    ply.lastVelocity = vy
+    ply:setLinearVelocity(0,0)
+    ply.gravityScale = 0
+    game = false
+    timer.pauseAll()
+    paused = true
+
+    for i in ipairs(blocksArray) do 
+        local element = blocksArray[i]
+        local vx,vy = element:getLinearVelocity()
+
+        transition.pauseAll()
+
+        if (element.objectType == "sprite") then
+            element.wasPlaying = element.isPlaying
+            element:pause() 
+        elseif (element.objectType == "emitter") then
+            element:pause()
+        end
+        
+        element.lastVelocityX = vx
+        element.lastVelocityY = vy
+        element:setLinearVelocity( 0, 0) 
+    end
 end
 
+local function play()
+    ply:play()
+    ply:setLinearVelocity(0,ply.lastVelocity+0.1)
+    ply.gravityScale = 1 
+    game = true
+    shoots = false
+    timer.resumeAll()
+    paused = false
+
+    for i in ipairs(blocksArray) do 
+        local element = blocksArray[i]
+        local vx,vy = element.lastVelocityX,element.lastVelocityY
+
+        transition.resumeAll()
+
+        if (element.objectType == "sprite" and element.wasPlaying) then
+            element:play() 
+        elseif (element.objectType == "emitter" and element.isVisible) then
+            element:start()
+        end
+        element:setLinearVelocity( vx, vy) 
+    end
+end
 
 M.playerEvent = function( event )
     if (game == true) then
@@ -235,6 +252,14 @@ M.playerEvent = function( event )
 
         if event.phase == "up" then
             pressed = false
+        end
+    end
+
+    if (event.keyName == event.phase) then
+        if (paused) then
+            play()
+        else
+            pause()
         end
     end
 end

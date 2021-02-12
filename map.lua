@@ -49,6 +49,9 @@ function createMap( environment, selectorPosition )
         cleanMap()
         local curLevel = fileHandler.getCurrentLevel()
 
+        print(selectedLevel)
+        print("environment "..environment)
+
         local arrow
         local j
 
@@ -265,8 +268,6 @@ function scene:show( event )
                                                         selectedLevel = selectedLevel + levelChange
                                                         selector.x = selector.x + indent*levelChange
                                                 end
-
-                                                print(selectedLevel)
                                         else
                                                 if (event.keyName == "right" and selectedLevel < 6) then
                                                         selector.x = rightArrowX
@@ -318,17 +319,18 @@ function scene:show( event )
                                                 end
                                                 selectorPosition = "low"
                                         else
-                                                if (selectedLevel == 0) then
+                                                if (selectedLevel == 0) then           
                                                         composer.gotoScene( "credits" )
                                                         composer.removeScene("map", true)
                                                         audio.play(clickSound)
-                                                        Runtime:removeEventListener("key", onKeyEvent)
+
+                                                        selectedLevel = 1
                                                 elseif (selectedLevel == -1)then
                                                         composer.gotoScene( "level" )
                                                         composer.removeScene("map", true)
                                                         composer.setVariable( "lvl", 0 )
                                                         audio.play(clickSound)
-                                                        Runtime:removeEventListener("key", onKeyEvent)
+                                                        selectedLevel = 1
                                                 else
                                                         local curLevel = fileHandler.getCurrentLevel()
                                                         if (selectedLevel > curLevel) then

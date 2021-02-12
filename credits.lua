@@ -21,6 +21,7 @@ local function inAndOut( group )
     transition.fadeIn(group, {delay = delayTime, time = 1400})
     transition.fadeOut(group,{delay = delayTime + 6000, time = 1400})
     delayTime = delayTime + 7400
+
 end
 
 local function keyEvent( event )
@@ -129,7 +130,7 @@ function scene:show( event )
         
             inAndOut(asset9)
 
-            timer.performWithDelay(delayTime, function() composer.gotoScene("map") end)
+            timer.performWithDelay(delayTime, function() print("ano"); composer.gotoScene("map") end)
 
             Runtime:addEventListener( "key", keyEvent)
 
