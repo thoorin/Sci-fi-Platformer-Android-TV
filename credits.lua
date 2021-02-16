@@ -17,6 +17,8 @@ local fireworksSequences = {
 
 local delayTime
 
+local mainTimer
+
 local function inAndOut( group )
     transition.fadeIn(group, {delay = delayTime, time = 1400})
     transition.fadeOut(group,{delay = delayTime + 6000, time = 1400})
@@ -29,6 +31,7 @@ local function keyEvent( event )
         composer.gotoScene("map")
         composer.removeScene( "credits", true )
         Runtime:removeEventListener( "key", keyEvent)
+        timer.cancel(mainTimer)
     end
 end
 -- -----------------------------------------------------------------------------------
@@ -130,7 +133,10 @@ function scene:show( event )
         
             inAndOut(asset9)
 
-            timer.performWithDelay(delayTime, function() print("ano"); composer.gotoScene("map") end)
+            mainTimer = timer.performWithDelay(delayTime, function() composer.gotoScene("map")
+                composer.removeScene( "credits", true )
+                Runtime:removeEventListener( "key", keyEvent) 
+            end)
 
             Runtime:addEventListener( "key", keyEvent)
 

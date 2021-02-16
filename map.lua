@@ -324,6 +324,7 @@ function scene:show( event )
                                                         composer.removeScene("map", true)
                                                         audio.play(clickSound)
 
+                                                        Runtime:removeEventListener("key", onKeyEvent)
                                                         selectedLevel = 1
                                                 elseif (selectedLevel == -1)then
                                                         composer.gotoScene( "level" )
