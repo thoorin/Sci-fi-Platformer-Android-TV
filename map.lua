@@ -331,6 +331,8 @@ function scene:show( event )
                                                         composer.removeScene("map", true)
                                                         composer.setVariable( "lvl", 0 )
                                                         audio.play(clickSound)
+
+                                                        Runtime:removeEventListener("key", onKeyEvent)
                                                         selectedLevel = 1
                                                 else
                                                         local curLevel = fileHandler.getCurrentLevel()

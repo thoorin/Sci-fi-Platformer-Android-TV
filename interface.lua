@@ -111,14 +111,8 @@ end
 
 local nextLevel = function()
     timer.cancelAll()
-    local activeIcon = pauseIcon == nil and playIcon or pauseIcon
     creator.cancelEnemyTimers()
     level = level + 1
-
-    activeIcon:removeEventListener("tap",activeIcon.onObjectTap)
-    display.remove(activeIcon)
-    Runtime:removeEventListener( "tap", closeBtn )
-    Runtime:removeEventListener( "tap", replayBtn )
 
     M.setRecord()
 
@@ -169,11 +163,7 @@ M.winScreen = function()
             elseif (event.keyName == "enter") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
-                    local activeIcon = pauseIcon == nil and playIcon or pauseIcon
                     creator.cancelEnemyTimers()
-            
-                    activeIcon:removeEventListener("tap",activeIcon.onObjectTap)
-                    display.remove(activeIcon)
                     composer.gotoScene("map")
 
                     for i in ipairs(elements) do 
@@ -185,11 +175,7 @@ M.winScreen = function()
                     audio.stop(31)
                     audio.play(clickSound)
                 elseif (selectorPosition == 1) then
-                    local activeIcon = pauseIcon == nil and playIcon or pauseIcon
                     creator.cancelEnemyTimers()
-
-                    activeIcon:removeEventListener("tap",activeIcon.onObjectTap)
-                    display.remove(activeIcon)
                     
                     if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
                     game.setCanJump(false)

@@ -74,7 +74,7 @@ M.createLevel0 = function()
     g.setPlayer(c.createPlayer(100))
     top = display.contentHeight-64
 
-    M.createSetOfBlocks(0,top,140)
+    M.createSetOfBlocks(0,top,180)
 
     c.createTree1(200, top)
     c.createTree2(240, top)
@@ -149,7 +149,7 @@ M.createLevel0 = function()
     c.createMushroom1(2855,top)
     c.createTree1(2990,top)
 
-    c.createSign2(3200, top)
+    c.createSign2(4000, top)
 
     c.createStone(3420, top)
     c.createBush1(3470, top)
@@ -159,6 +159,24 @@ M.createLevel0 = function()
     c.createFlower(3700, top)
     c.createFlowerReverse(3720, top)
     c.createFlower(3750, top)
+
+    c.createSmallTree1(4200,top)
+    c.createTree1(4220,top)
+    c.createMushroom1(4200,top)
+    c.createTree2(4300,top)
+    c.createTree1(4290,top)
+    c.createTree1(4340,top)
+    c.createStone(4370,top)
+    c.createStone(4385,top)
+    c.createSmallTree2(4450,top)
+    c.createTree2(4410,top)
+    c.createTree2(4550,top)
+    c.createTree1(4490,top)
+    c.createTree2(4680,top)
+    c.createSmallTree2(4640,top)
+    c.createTree1(4610,top)
+    c.createTree2(4750,top)
+
     c.createTouch()
 end
 

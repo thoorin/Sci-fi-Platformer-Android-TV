@@ -966,14 +966,14 @@ M.createLandMine = function( x, y)
 end
 
 M.createTouch = function()
-    local leftX = display.contentWidth-display.actualContentWidth*0.65
-    local left = display.newImageRect(frontGroup, "touch.png", 105, 140 )
+    local controllerX = display.contentWidth-display.actualContentWidth*0.5
+    local left = display.newImageRect(frontGroup, "remote-controller-left.jpg", 200, 200 )
     left.myName = "touch"
-    left.x = leftX
-    left.y = 200
+    left.x = controllerX
+    left.y = 150
     left.isSensor = true
 
-    local text = display.newText(frontGroup,"      Touch left half \nof the screen to jump",leftX,300,"ethnocentric rg.ttf", 30, "center")
+    local text = display.newText(frontGroup,"      Press left button on D-pad\n      to jump",controllerX,300,"ethnocentric rg.ttf", 30, "center")
     text:setFillColor(0,0,0.2);
     scaleFactor = display.actualContentWidth/display.actualContentHeight/1.94
     text:scale(scaleFactor,scaleFactor)
@@ -985,15 +985,13 @@ M.createTouch = function()
 
     transition.fadeIn(leftGroup, { time = 1400});
     transition.fadeOut(leftGroup,{ time = 1400, delay = 6500});
-
-    local rightX = display.contentWidth-display.actualContentWidth*0.35
-    local right = display.newImageRect(frontGroup, "touch.png", 105, 140 )
+    local right = display.newImageRect(frontGroup, "remote-controller-right.jpg", 200, 200 )
     right.myName = "touch"
-    right.x = rightX
-    right.y = 200
+    right.x = controllerX
+    right.y = 150
     right.isSensor = true
 
-    local textRight = display.newText(frontGroup,"      Touch right half \nof the screen to shoot",rightX,300,"ethnocentric rg.ttf", 30, "center")
+    local textRight = display.newText(frontGroup,"      Press right button on D-pad\n      to shoot",controllerX,300,"ethnocentric rg.ttf", 30, "center")
     textRight:setFillColor(0,0,0.2);
     textRight:scale(scaleFactor,scaleFactor)
 
@@ -1004,6 +1002,24 @@ M.createTouch = function()
 
     transition.fadeIn(rightGroup, { time = 1400, delay = 8000});
     transition.fadeOut(rightGroup,{ time = 1400, delay = 14500});
+
+    local up = display.newImageRect(frontGroup, "remote-controller-stop.jpg", 200, 200 )
+    up.myName = "touch"
+    up.x = controllerX
+    up.y = 150
+    up.isSensor = true
+
+    local textUp = display.newText(frontGroup,"      Press up or down button on D-pad\n      to pause and unpause",controllerX,300,"ethnocentric rg.ttf", 30, "center")
+    textUp:setFillColor(0,0,0.2);
+    textUp:scale(scaleFactor,scaleFactor)
+
+    local upGroup = display.newGroup();
+    upGroup:insert(up)
+    upGroup:insert(textUp)
+    upGroup.alpha = 0
+
+    transition.fadeIn(upGroup, { time = 1400, delay = 16000});
+    transition.fadeOut(upGroup,{ time = 1400, delay = 20000});
 end
 
 M.getMainGroup = function()

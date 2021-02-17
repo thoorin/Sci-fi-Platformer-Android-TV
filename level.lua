@@ -79,7 +79,7 @@ function scene:show( event )
                 builder.setCollisionHandler(collisionHandler)
                 builder.createLevel(composer.getVariable("lvl"))
 
-                --musicTrack = composer.getVariable("lvl") > 5 and audio.loadStream( "dessert_song.MP3") or audio.loadStream( "s6.mp3")
+                musicTrack = composer.getVariable("lvl") > 5 and audio.loadStream( "dessert_song.MP3") or audio.loadStream( "s6.mp3")
 
                 game.setComposer(composer)
                 game.setCreator(creator)
