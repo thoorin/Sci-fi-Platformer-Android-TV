@@ -160,7 +160,7 @@ M.winScreen = function()
                 if (selectorPosition > 0) then
                     selectorPosition = selectorPosition - 1
                 end
-            elseif (event.keyName == "enter") then
+            elseif (event.keyName == "center") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
                     creator.cancelEnemyTimers()
@@ -255,7 +255,7 @@ M.deathScreen = function()
                 if (selectorPosition == 1) then
                     selectorPosition = selectorPosition - 1
                 end
-            elseif (event.keyName == "enter") then
+            elseif (event.keyName == "center") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
                     creator.cancelEnemyTimers()

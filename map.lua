@@ -294,7 +294,7 @@ function scene:show( event )
                                                 selectedLevel = 6
                                         end
                                         selectorPosition = "low"
-                                elseif (event.keyName == "enter") then
+                                elseif (event.keyName == "center") then
                                         if (selectorPosition == "high") then
                                                 if (selector.x < 500) then
                                                         if (selectedLevel > 5) then

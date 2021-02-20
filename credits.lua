@@ -103,7 +103,7 @@ function scene:show( event )
         
             inAndOut(asset4)
         
-            local asset5 = display.newText(sceneGroup, "Touch gestures by macrovector\nwww.freepik.com\n\nFireworks by jellyfizh\nfrom opengameart.org\n\nScroll (symbol for Credits) and Book\n(symbol for Tutorial)\nby Olga Bikmullina", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY, "PermanentMarker-Regular.ttf",30)  
+            local asset5 = display.newText(sceneGroup, "Tv Remote Control Icon \nfrom icon-library.com\n\nFireworks by jellyfizh\nfrom opengameart.org\n\nScroll (symbol for Credits) and Book\n(symbol for Tutorial)\nby Olga Bikmullina", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY, "PermanentMarker-Regular.ttf",30)  
             asset5:setTextColor( 0, 0, 0)
             asset5.alpha = 0
         
