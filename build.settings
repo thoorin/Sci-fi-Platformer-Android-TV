@@ -18,6 +18,8 @@ settings =
 	--
 	android =
 	{
+		supportsTV = true,
+        	isGame = true,
 		usesPermissions =
 		{
 			"android.permission.INTERNET",
