@@ -5,76 +5,142 @@
 -----------------------------------------------------------------------------------------
 local M = {}
 
-local c
-local g
-local collisionHandler
-local blocksArray = {}
+local c, g, cH, background, top, start
 local en = require("environment")
-local background
 
-M.setCreator = function(creator)
+local function setVariables(creator, game, collisionHandler)
     c = creator
-end
-
-M.setGame = function(game)
     g = game
+    cH = collisionHandler
 end
 
-M.setBlocksArray = function(blocks)
-    blocksArray = blocks
+local function createSetOfBlocks(start,top,width)
+    local heightInPixels = display.contentHeight - top
+    local height = math.ceil(heightInPixels/32)
+
+    c.createBlockStartTop(start,top)
+    for i=1,width do
+        c.createBlockTop(start+32*i-1, top+1)
+        c.createBlockTop(start+32*i, top)
+        for j=1,height do 
+            c.createBlock(start+31*i, top + 32*j)
+        end
+    end
+
+    local endOfBlocks, endX = start+width*31, start+width*32+32
+    local widthAdditionalBlocksPixels = endX - endOfBlocks
+    local widhtAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
+
+    for i=1,widhtAdditionalBlocks do
+        for j=1,height do 
+            c.createBlock(endOfBlocks+31*i, top + 32*j)
+        end
+    end
+
+    c.createBlockEndTop(endX,top)
+
+    for j=1,height do 
+        c.createBlockStart(start,top + 32*j)
+        c.createBlockEnd(endX, top + 32*j)
+    end
 end
 
-M.setCollisionHandler = function(c)
-    collisionHandler = c
-end
 
-M.updateBackground = function( environment )
-    display.remove(background)
-    en.setEnvironment(environment)
-    background = c.createBackground() 
-end 
+local function createSetOfBlocksLeftHill(start,top,width,hillWidth,hillTop)
+    local hillStart = start+(width-hillWidth)*32+32
+    local heightInPixels = display.contentHeight - top
+    local height = math.ceil(heightInPixels/32)
 
-M.createLevel = function(level)
-    g.setStopped(false)
+    local widthBeforeHill = width - hillWidth
+    c.createBlockStartTop(start,top)
+    for i=1,widthBeforeHill do
+        c.createBlockTop(start+32*i-1, top+1)
+        c.createBlockTop(start+32*i, top)
+        for j=1,height do 
+            c.createBlock(start+31*i, top + 32*j)
+        end
+    end
 
-    if (level <=5 ) then
-        M.updateBackground(1)
+    local endOfBlocks = start+(width-hillWidth)*31
+    local endX = start+(width-hillWidth)*32+32
+          endX = top>hillTop and endX + 32 or endX
+    local widthAdditionalBlocksPixels = endX - endOfBlocks
+    local widthAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
+    
+    for j=1,height do 
+        c.createBlockStart(start,top + 32*j)
+    end
+
+    local hillHeightInPixels = display.contentHeight - hillTop
+    local hillHeight = math.ceil(hillHeightInPixels/32)
+ 
+    for i=1,widthAdditionalBlocks do
+        for j=1,height do 
+            c.createBlock(endOfBlocks+31*i, top + 32*j)
+        end
+    end
+
+    if (top<hillTop) then
+        for j=1,hillHeight do 
+            c.createBlock(endOfBlocks+widthAdditionalBlocksPixels, hillTop + 32*j)
+        end
+    end
+
+    local heightStartHill = hillHeight-height-1
+
+    for i=1,hillWidth do
+        c.createBlockTop(hillStart+32*i-1, hillTop+1)
+        c.createBlockTop(hillStart+32*i, hillTop)
+        for j=1,hillHeight do 
+            c.createBlock(hillStart+31*i, hillTop + 32*j)
+        end
+    end
+
+    local b1,b2,b3,b4
+    local sign = 1
+    local t1,t2 = hillTop,top
+    if (hillTop<top) then
+        b1,b2,b3,b4 = c.createBlockBottomEnd,c.createBlockBottomEndEdge,c.createBlockStartTop,c.createBlockStart
+        sign = - 1
+        t1,t2 = top, hillTop
     else
-        M.updateBackground(2)
+        heightStartHill = height-hillHeight-1
+        b1,b2,b3,b4 = c.createBlockBottomStart,c.createBlockBottomStartEdge,c.createBlockEndTop,c.createBlockEnd
+    end
+    b1(hillStart + 32*sign,t1)
+    b2(hillStart,t1)
+    b3(hillStart,t2)
+    for j=1,heightStartHill do 
+        b4(hillStart,t2 + 32*j)
     end
 
-    if (level == 0) then
-        M.createLevel0()
-    elseif (level == 1) then
-        M.createLevel1()
-    elseif (level == 2) then
-        M.createLevel2()
-    elseif (level == 3) then
-        M.createLevel3()
-    elseif (level == 4) then
-        M.createLevel4()
-    elseif (level == 5) then
-        M.createLevel5()
-    elseif (level == 6) then
-        M.createLevel6()
-    elseif (level == 7) then
-        M.createLevel7()
-    elseif (level == 8) then
-        M.createLevel8()
-    elseif (level == 9) then
-        M.createLevel9()
-    elseif (level == 10) then
-        M.createLevel10()
+    endOfBlocks = hillStart + hillWidth*31
+    endX = hillStart + hillWidth * 32 + 32
+    widthAdditionalBlocksPixels = endX - endOfBlocks
+    widthAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
+
+
+    for i=1,widthAdditionalBlocks do
+        for j=1,hillHeight do 
+            c.createBlock(endOfBlocks+31*i, hillTop + 32*j)
+        end
+    end
+
+    local widthInPixels = hillWidth*32+32
+    c.createBlockEndTop(hillStart + widthInPixels,hillTop)
+
+    for j=1,hillHeight do
+        c.createBlockEnd(hillStart + widthInPixels,hillTop+32*j)
     end
 
 end
 
-M.createLevel0 = function()
-    collisionHandler.setLevel(0)
+
+local function createLevel0()
     g.setPlayer(c.createPlayer(100))
     top = display.contentHeight-64
 
-    M.createSetOfBlocks(0,top,180)
+    createSetOfBlocks(0,top,140)
 
     c.createTree1(200, top)
     c.createTree2(240, top)
@@ -149,7 +215,7 @@ M.createLevel0 = function()
     c.createMushroom1(2855,top)
     c.createTree1(2990,top)
 
-    c.createSign2(4000, top)
+    c.createSign2(3200, top)
 
     c.createStone(3420, top)
     c.createBush1(3470, top)
@@ -159,32 +225,11 @@ M.createLevel0 = function()
     c.createFlower(3700, top)
     c.createFlowerReverse(3720, top)
     c.createFlower(3750, top)
-
-    c.createSmallTree1(4200,top)
-    c.createTree1(4220,top)
-    c.createMushroom1(4200,top)
-    c.createTree2(4300,top)
-    c.createTree1(4290,top)
-    c.createTree1(4340,top)
-    c.createStone(4370,top)
-    c.createStone(4385,top)
-    c.createSmallTree2(4450,top)
-    c.createTree2(4410,top)
-    c.createTree2(4550,top)
-    c.createTree1(4490,top)
-    c.createTree2(4680,top)
-    c.createSmallTree2(4640,top)
-    c.createTree1(4610,top)
-    c.createTree2(4750,top)
-
     c.createTouch()
 end
 
-M.createLevel1 = function()
-    collisionHandler.setLevel(1)
+local function createLevel1()
     g.setPlayer(c.createPlayer(100))
-    local top
-    local start
 
     do
         top = display.contentHeight-232
@@ -430,10 +475,7 @@ M.createLevel1 = function()
     end
 end
 
-M.createLevel2 = function()
-    local top
-    local start
-    collisionHandler.setLevel(2)
+local function createLevel2()
     g.setPlayer(c.createPlayer(100))
     do
         top = display.contentHeight-68
@@ -635,10 +677,7 @@ M.createLevel2 = function()
     end
 end
 
-M.createLevel3 = function()
-    local top
-    local start
-    collisionHandler.setLevel(3)
+local function createLevel3()
     g.setPlayer(c.createPlayer(100))
     do
         top = display.contentHeight-64
@@ -865,10 +904,7 @@ M.createLevel3 = function()
     end
 end
 
-M.createLevel4 = function()
-    local top
-    local start
-    collisionHandler.setLevel(4)
+local function createLevel4()
     g.setPlayer(c.createPlayer(0))
     do
         top = display.contentHeight-416
@@ -1256,10 +1292,7 @@ M.createLevel4 = function()
 end
 
 
-M.createLevel5 = function()
-    local top
-    local start
-    collisionHandler.setLevel(5)
+local function createLevel5()
     g.setPlayer(c.createPlayer(300))
     
     do
@@ -1653,10 +1686,7 @@ M.createLevel5 = function()
     end
 end
 
-M.createLevel6 = function()
-    local top
-    local start
-    collisionHandler.setLevel(6)
+local function createLevel6()
     g.setPlayer(c.createPlayer(300))
     
     do
@@ -1788,137 +1818,15 @@ M.createLevel6 = function()
     end
 end
 
-M.createSetOfBlocks = function(start,top,width)
-    local heightInPixels = display.contentHeight - top
-    local height = math.ceil(heightInPixels/32)
-
-    c.createBlockStartTop(start,top)
-    for i=1,width do
-        c.createBlockTop(start+32*i-1, top+1)
-        c.createBlockTop(start+32*i, top)
-        for j=1,height do 
-            c.createBlock(start+31*i, top + 32*j)
-        end
-    end
-
-    local endOfBlocks = start+width*31
-    local endX = start+width*32+32
-    local widthAdditionalBlocksPixels = endX - endOfBlocks
-    local widhtAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
-
-    for i=1,widhtAdditionalBlocks do
-        for j=1,height do 
-            c.createBlock(endOfBlocks+31*i, top + 32*j)
-        end
-    end
-
-    c.createBlockEndTop(endX,top)
-
-    for j=1,height do 
-        c.createBlockStart(start,top + 32*j)
-        c.createBlockEnd(endX, top + 32*j)
-    end
-end
-
-M.createSetOfBlocksLeftHill = function(start,top,width,hillWidth,hillTop)
-    local hillStart = start+(width-hillWidth)*32+32
-    local heightInPixels = display.contentHeight - top
-    local height = math.ceil(heightInPixels/32)
-
-    local widthBeforeHill = width - hillWidth
-    c.createBlockStartTop(start,top)
-    for i=1,widthBeforeHill do
-        c.createBlockTop(start+32*i-1, top+1)
-        c.createBlockTop(start+32*i, top)
-        for j=1,height do 
-            c.createBlock(start+31*i, top + 32*j)
-        end
-    end
-
-    local endOfBlocks = start+(width-hillWidth)*31
-    local endX = start+(width-hillWidth)*32+32
-          endX = top>hillTop and endX + 32 or endX
-    local widthAdditionalBlocksPixels = endX - endOfBlocks
-    local widthAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
-    
-    for j=1,height do 
-        c.createBlockStart(start,top + 32*j)
-    end
-
-    local hillHeightInPixels = display.contentHeight - hillTop
-    local hillHeight = math.ceil(hillHeightInPixels/32)
- 
-    for i=1,widthAdditionalBlocks do
-        for j=1,height do 
-            c.createBlock(endOfBlocks+31*i, top + 32*j)
-        end
-    end
-
-    if (top<hillTop) then
-        for j=1,hillHeight do 
-            c.createBlock(endOfBlocks+widthAdditionalBlocksPixels, hillTop + 32*j)
-        end
-    end
-
-    local heightStartHill = hillHeight-height-1
-
-    for i=1,hillWidth do
-        c.createBlockTop(hillStart+32*i-1, hillTop+1)
-        c.createBlockTop(hillStart+32*i, hillTop)
-        for j=1,hillHeight do 
-            c.createBlock(hillStart+31*i, hillTop + 32*j)
-        end
-    end
-
-    if (hillTop<top) then
-        c.createBlockBottomEnd(hillStart-32,top)
-        c.createBlockBottomEndEdge(hillStart,top)
-        c.createBlockStartTop(hillStart,hillTop)
-        for j=1,heightStartHill do 
-            c.createBlockStart(hillStart,hillTop + 32*j)
-        end
-    else
-        heightStartHill = height-hillHeight-1
-        c.createBlockBottomStart(hillStart+32,hillTop)
-        c.createBlockBottomStartEdge(hillStart,hillTop)
-        c.createBlockEndTop(hillStart,top)
-        for j=1,heightStartHill do 
-            c.createBlockEnd(hillStart,top + 32*j)
-        end
-    end
-  
-
-    endOfBlocks = hillStart + hillWidth*31
-    endX = hillStart + hillWidth * 32 + 32
-    widthAdditionalBlocksPixels = endX - endOfBlocks
-    widthAdditionalBlocks = math.floor(widthAdditionalBlocksPixels/32)
 
 
-    for i=1,widthAdditionalBlocks do
-        for j=1,hillHeight do 
-            c.createBlock(endOfBlocks+31*i, hillTop + 32*j)
-        end
-    end
-
-    local widthInPixels = hillWidth*32+32
-    c.createBlockEndTop(hillStart + widthInPixels,hillTop)
-
-    for j=1,hillHeight do
-        c.createBlockEnd(hillStart + widthInPixels,hillTop+32*j)
-    end
-
-end
-
-M.createLevel7 = function()
-    local top
-    local start
-    collisionHandler.setLevel(7)
+local function createLevel7()
     g.setPlayer(c.createPlayer(300))
     
     do
         top = display.contentHeight-64
 
-        M.createSetOfBlocks(0,top,50)
+        createSetOfBlocks(0,top,50)
 
         c.createEnemyTank(1200,top)
         c.createLandMine(1300,top)
@@ -1940,7 +1848,7 @@ M.createLevel7 = function()
         local hillStart = start+(width-hillWidth)*32+32
         local hillTop = top-128
 
-        M.createSetOfBlocksLeftHill(start,top,width,hillWidth,hillTop)
+        createSetOfBlocksLeftHill(start,top,width,hillWidth,hillTop)
 
         c.createCrate(start + 150, top-32)
         c.createSpike(start + 150, top-32)
@@ -1966,7 +1874,7 @@ M.createLevel7 = function()
         top = display.contentHeight-32
         start = 3700
 
-        M.createSetOfBlocks(start,top,50)
+        createSetOfBlocks(start,top,50)
 
         c.createSpike(start+110,top-32)
         c.createCrate(start + 110,top-32)
@@ -1985,17 +1893,14 @@ M.createLevel7 = function()
 
 end
 
-M.createLevel8 = function()
-    local top
-    local start
-    collisionHandler.setLevel(8)
+local function createLevel8()
     g.setPlayer(c.createPlayer(300))
     
     do
         top = display.contentHeight-32
         local hillTop = top-128
 
-        M.createSetOfBlocksLeftHill(0,top,55,30,hillTop)
+        createSetOfBlocksLeftHill(0,top,55,30,hillTop)
         c.createTigerBeetle(700,top)
         c.createTigerBeetle(770,top)
 
@@ -2043,7 +1948,7 @@ M.createLevel8 = function()
         top = display.contentHeight-240
         start = 2100
 
-        M.createSetOfBlocks(start,top,2)
+        createSetOfBlocks(start,top,2)
         c.createLandMine(start + 50, top)
     end
 
@@ -2051,7 +1956,7 @@ M.createLevel8 = function()
         top = display.contentHeight-32
         start = 2500
 
-        M.createSetOfBlocks(start,top,10)
+        createSetOfBlocks(start,top,10)
 
         c.createDesertTree(start + 300, top)
         c.createGrass1(start +  330, top)
@@ -2063,7 +1968,7 @@ M.createLevel8 = function()
         top = display.contentHeight-32
         start = 3000
 
-        M.createSetOfBlocks(start,top,30)
+        createSetOfBlocks(start,top,30)
         c.createSign2(start + 200, top)
 
         c.createBigStone(start + 50, top)
@@ -2077,16 +1982,13 @@ M.createLevel8 = function()
 
 end
 
-M.createLevel9 = function()
-    local top
-    local start
-    collisionHandler.setLevel(9)
+local function createLevel9()
     g.setPlayer(c.createPlayer(300))
      
     do
         top = display.contentHeight-32
 
-        M.createSetOfBlocks(0,top,30)
+        createSetOfBlocks(0,top,30)
         c.createCrate(980,top-32)
         c.createSpike(980,top-32)
 
@@ -2100,7 +2002,7 @@ M.createLevel9 = function()
         top = display.contentHeight
         start = 1250
         hillTop = top-96
-        M.createSetOfBlocksLeftHill(start,top,40,15,hillTop)
+        createSetOfBlocksLeftHill(start,top,40,15,hillTop)
         c.createEnemyTank(start + 300, top)
 
         c.createFrog(start + 850, hillTop)
@@ -2119,7 +2021,7 @@ M.createLevel9 = function()
         top = display.contentHeight - 192
         start = 3400
 
-        M.createSetOfBlocks(start,top,10)
+        createSetOfBlocks(start,top,10)
         c.createEnemyTank(start+100,top)
 
         c.createBigStone(start + 320, top)
@@ -2131,7 +2033,7 @@ M.createLevel9 = function()
 
         c.createSign1(start + 420, top)
 
-        M.createSetOfBlocks(start,top,32)
+        createSetOfBlocks(start,top,32)
         c.createFrog(start + 500, top)
 
         c.createStone(start+160, top)
@@ -2143,7 +2045,7 @@ M.createLevel9 = function()
         top = display.contentHeight - 64
         start = 4100
 
-        M.createSetOfBlocks(start,top,2)
+        createSetOfBlocks(start,top,2)
         c.createDesertBush2(start + 70, top)
     end
 
@@ -2151,7 +2053,7 @@ M.createLevel9 = function()
         top = display.contentHeight - 64
         start = 4480
 
-        M.createSetOfBlocks(start,top,20)
+        createSetOfBlocks(start,top,20)
         c.createCrate(start + 75, top - 32)
         c.createSpike(start + 75, top - 32)
 
@@ -2179,7 +2081,7 @@ M.createLevel9 = function()
         top = display.contentHeight - 192
         start = 5750
 
-        M.createSetOfBlocks(start,top,100)
+        createSetOfBlocks(start,top,100)
         c.createSign2(start + 300, top)
 
         c.createStone(start + 30, top)
@@ -2191,20 +2093,17 @@ M.createLevel9 = function()
     end
 end
 
-M.createLevel10 = function()
-    local top
-    local start
-    collisionHandler.setLevel(10)
+local function createLevel10()
     g.setPlayer(c.createPlayer(100))
      
     do
         top = display.contentHeight - 192
 
-        M.createSetOfBlocks(0,top,30)
+        createSetOfBlocks(0,top,30)
 
         c.createLandMine(900,top)
         c.createTigerBeetle(800,top)
-        M.createSetOfBlocks(1200,top,0)
+        createSetOfBlocks(1200,top,0)
 
         c.createDesertTree(250, top)
         c.createDesertBush1(290, top-3)
@@ -2221,7 +2120,7 @@ M.createLevel10 = function()
         top = display.contentHeight - 128
         start = 1600
 
-        M.createSetOfBlocks(start,top,40)
+        createSetOfBlocks(start,top,40)
         c.createLandMine(start + 150, top)
         c.createLandMine(start + 400, top)
         c.createCrate(start + 800, top-32)
@@ -2255,7 +2154,7 @@ M.createLevel10 = function()
 
         c.createEnemy(start + 700, top)
         c.createTigerBeetle(start + 420, top)
-        M.createSetOfBlocksLeftHill(start + 370, top, 35, 15, hillTop)
+        createSetOfBlocksLeftHill(start + 370, top, 35, 15, hillTop)
 
         c.createSpike(start + 1042, hillTop)
         c.createSkeleton(start + 1200,hillTop)
@@ -2282,7 +2181,7 @@ M.createLevel10 = function()
         top = display.contentHeight - 256
         start = 5150
 
-        M.createSetOfBlocks(start,top,12)
+        createSetOfBlocks(start,top,12)
         c.createGrass2Back(start + 310, top)
         c.createEnemy(start + 50, top)
         c.createEnemyTank(start + 250, top)
@@ -2297,7 +2196,7 @@ M.createLevel10 = function()
         lowLandTop = top + 64
         tryingPlaceBoulder = top + 58
 
-        M.createSetOfBlocksLeftHill(start,top,30,20,lowLandTop)
+        createSetOfBlocksLeftHill(start,top,30,20,lowLandTop)
         c.createEnemyTank(start + 200, top)
         c.createEnemyTank(start + 800, lowLandTop)
         c.createEnemyTank(start + 900, lowLandTop)
@@ -2312,7 +2211,7 @@ M.createLevel10 = function()
         top = display.contentHeight - 86
         start =  6700
 
-        M.createSetOfBlocks(start,top,5)
+        createSetOfBlocks(start,top,5)
         c.createFrog(start + 50,top)
         c.createSpike(start,top)
     end
@@ -2321,7 +2220,7 @@ M.createLevel10 = function()
         top = display.contentHeight - 128
         start =  7200
 
-        M.createSetOfBlocksLeftHill(start, top, 26, 14, top-128)
+        createSetOfBlocksLeftHill(start, top, 26, 14, top-128)
 
         c.createGrass2(start + 410, top - 128)
         c.createGrass2(start + 430, top - 128)
@@ -2365,7 +2264,7 @@ M.createLevel10 = function()
         top = display.contentHeight
         start =  8450
 
-        M.createSetOfBlocks(start, top, 120)
+        createSetOfBlocks(start, top, 120)
         c.createLandMine(start, top)
         c.createLandMine(start+200, top)
         c.createLandMine(start+232, top)
@@ -2388,6 +2287,30 @@ M.createLevel10 = function()
 
         c.createEnemy(start + 2000, top)
     end
+end
+
+local createLevels = {createLevel0, createLevel1, createLevel2, createLevel3, createLevel4, createLevel5, 
+createLevel6, createLevel7, createLevel8, createLevel9, createLevel10}
+
+local function updateBackground(environment)
+  display.remove(background)
+  en.setEnvironment(environment)
+  background = c.createBackground() 
+end 
+
+local function createLevel(level)
+  g.setStopped(false)
+
+  local environment = level <= 5 and 1 or 2
+  updateBackground(environment)
+
+  cH.setLevel(level)
+  createLevels[level+1]()
+end
+
+M.setUp = function(creator, game, collisionHandler, level)
+  setVariables(creator,game,collisionHandler)
+  createLevel(level)
 end
 
 return M

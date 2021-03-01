@@ -17,22 +17,16 @@ local fireworksSequences = {
 
 local delayTime
 
-local mainTimer
-
 local function inAndOut( group )
     transition.fadeIn(group, {delay = delayTime, time = 1400})
     transition.fadeOut(group,{delay = delayTime + 6000, time = 1400})
     delayTime = delayTime + 7400
-
 end
 
-local function keyEvent( event )
-    if (event.phase == "down") then
-        composer.gotoScene("map")
-        composer.removeScene( "credits", true )
-        Runtime:removeEventListener( "key", keyEvent)
-        timer.cancel(mainTimer)
-    end
+local function tapEvent()
+    composer.gotoScene("map")
+    Runtime:removeEventListener( "touch", tapEvent)
+    composer.removeScene( "credits", true )
 end
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -103,7 +97,7 @@ function scene:show( event )
         
             inAndOut(asset4)
         
-            local asset5 = display.newText(sceneGroup, "Tv Remote Control Icon \nfrom icon-library.com\n\nFireworks by jellyfizh\nfrom opengameart.org\n\nScroll (symbol for Credits) and Book\n(symbol for Tutorial)\nby Olga Bikmullina", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY, "PermanentMarker-Regular.ttf",30)  
+            local asset5 = display.newText(sceneGroup, "Touch gestures by macrovector\nwww.freepik.com\n\nFireworks by jellyfizh\nfrom opengameart.org\n\nScroll (symbol for Credits) and Book\n(symbol for Tutorial)\nby Olga Bikmullina", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY, "PermanentMarker-Regular.ttf",30)  
             asset5:setTextColor( 0, 0, 0)
             asset5.alpha = 0
         
@@ -133,12 +127,9 @@ function scene:show( event )
         
             inAndOut(asset9)
 
-            mainTimer = timer.performWithDelay(delayTime, function() composer.gotoScene("map")
-                composer.removeScene( "credits", true )
-                Runtime:removeEventListener( "key", keyEvent) 
-            end)
+            timer.performWithDelay(delayTime, function() composer.gotoScene("map") end)
 
-            Runtime:addEventListener( "key", keyEvent)
+            Runtime:addEventListener( "touch", tapEvent)
 
         elseif ( phase == "did" ) then
         end

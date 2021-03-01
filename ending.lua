@@ -30,9 +30,9 @@ local function createFireworks( x, y, delay)
 
 end
 
-local function keyEvent()
+local function tapEvent()
     composer.gotoScene("map")
-    Runtime:removeEventListener( "key", keyEvent)
+    Runtime:removeEventListener( "touch", tapEvent)
     composer.removeScene( "credits", true )
 end
 
@@ -82,7 +82,7 @@ function scene:show( event )
 	local phase = event.phase
 
         if ( phase == "will" ) then
-            Runtime:addEventListener( "key", keyEvent)
+            Runtime:addEventListener( "touch", tapEvent)
 
         elseif ( phase == "did" ) then
         end
@@ -101,7 +101,7 @@ function scene:hide( event )
         end
         sceneGroup = {}]]--
 
-        Runtime:removeEventListener( "key", keyEvent)
+        Runtime:removeEventListener( "touch", tapEvent)
         
         elseif ( phase == "did" ) then
 	end

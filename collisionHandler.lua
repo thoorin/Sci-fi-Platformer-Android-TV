@@ -6,13 +6,11 @@
 
 local M = {}
 
-local game
-local creator
-local interface
-local playerContactedByBlock = false
-local playerContactedByMoving = false
-local blocksContacted = 0
-local win = false
+local game, creator, interface, frontGroup
+local playerContactedByBlock, playerContactedByMoving = false, false
+
+local level, score, blocksContacted, particlesArray, win = 0, 0, 0, {}, false
+
 local mineExplosion = audio.loadSound( "268557__cydon__explosion-001.mp3" )
 local splashSound = audio.loadSound( "water_splash.mp3" )
 local startSound = audio.loadSound( "ship_starting.mp3" )
@@ -21,27 +19,7 @@ local trollAttack = audio.loadSound( "troll_attack5.mp3" )
 local trollDeath = audio.loadSound( "troll_attack2.mp3" )
 local frogDeath = audio.loadSound( "frog_death.mp3" )
 local stabSound = audio.loadSound( "stab.mp3" )
-local particlesArray = {}
-local level = 0
 local hitSound = audio.loadSound( "boom9.wav" )
-local score = 0
-local frontGroup
-
-M.setGame = function(g)
-    game = g
-end
-
-M.setFrontgroup = function(f)
-    frontGroup = f
-end
-
-M.setCreator = function(c)
-    creator = c
-end
-
-M.setInterface = function(i)
-    interface = i
-end
 
 M.setLevel = function( lvl )
     level = lvl
@@ -55,19 +33,19 @@ M.setBlocksContacted = function( val )
     blocksContacted = val
 end
 
+M.setUp = function (g,c,i,fG,sc,bC)
+    game, creator, interface, frontGroup = g, c, i, fG
+    M.setScore(sc)
+    M.setBlocksContacted(bC)
+end
+
 M.onCollision = function( event )
     local obj1 = event.object1
     local obj2 = event.object2
     local objs = { obj1, obj2 }
+    local array = game.getBlocksArray()
 
-    M.isCollided = function( name )
-        for index, value in ipairs(objs) do
-            if (value.myName == name) then return true end
-        end
-        return false
-    end
-
-    M.findObject = function( name )
+    local function findObject( name )
         for index, value in ipairs(objs) do
             if (value.myName == name) then return value end
         end
@@ -75,26 +53,21 @@ M.onCollision = function( event )
     end
 
     if ( event.phase == "began" ) then    
-        if ( M.isCollided("player")) then
-            local player = M.findObject("player")
+        if ( findObject("player")) then
+            player = findObject("player")
 
-            if (M.isCollided("block") or M.isCollided("blockMoving")) 
-            then   
-                local block
+            if (findObject("block") or findObject("blockMoving")) then   
+                local block = findObject("block") or findObject("blockMoving")
+                if (block.myName == "block") then playerContactedByBlock = true else playerContactedByMoving = true end
 
-                if (M.isCollided("block")) then playerContactedByBlock = true; block = M.findObject("block")end
-                if (M.isCollided("blockMoving")) then playerContactedByMoving = true; block = M.findObject("blockMoving")end
+                if ((player.y - block.y) < -46.4 or (playerContactedByMoving and (player.y - block.y) < -44)) then game.setCanJump(true) end
 
-                print(player.y - block.y)
-                if ((player.y - block.y) < -46.4) then game.setCanJump(true) end
-                if (playerContactedByMoving and (player.y - block.y) < -44) then game.setCanJump(true) end
-
-                if (math.abs(obj1.y - obj2.y) <= 46.4 and game.getStopped()==false and game.getCanJump()==false and game.getGame()==true and M.findObject("blockMoving")==false) then 
+                if (math.abs(obj1.y - obj2.y) <= 46.4 and game.getStopped()==false and game.getCanJump()==false and game.getGame()==true and playerContactedByMoving==false) then 
                     game.stopping() 
                     game.setStopped(true)
                 end
 
-                blocksContacted = blocksContacted + 150
+                blocksContacted = blocksContacted + 1
                 
                 if (game.getGame()==true) then
                     player:play()
@@ -108,50 +81,45 @@ M.onCollision = function( event )
                 if (playerContactedByBlock == true and playerContactedByMoving == true and math.abs(obj1.y - obj2.y) < 46) then timer.performWithDelay(1,game.death);end
             end
 
-            if ( M.isCollided("mine"))
+            if ( findObject("mine"))
             then
-                local mine = M.findObject("mine")
+                local mine = findObject("mine")
 
                 timer.performWithDelay(200,function() 
-                    if (game.getGame()==true) then
-
-                    creator.createExplosion(mine.x,mine.y)
-                    audio.play(mineExplosion)
-
-                    mine.isVisible = false
-
-                    player.isVisible = false 
-                    game.death()
+                    if (game.getGame()) then
+                        creator.createExplosion(mine.x,mine.y)
+                        audio.play(mineExplosion)
+                        mine.isVisible = false
+                        player.isVisible = false 
+                        game.death()
                     end
                 end)
             end
 
-            if ( M.isCollided("spike"))
+            if ( findObject("spike"))
             then
-                local spike = M.findObject("spike")
+                local spike = findObject("spike")
 
-                if (game.getGame()==true) then
+                if (game.getGame()) then
                     spike:play()
                     audio.play(stabSound)
                     timer.performWithDelay(1,function() game.death() end)
                 end
             end
 
-            if ( M.isCollided("water"))
+            if ( findObject("water"))
             then
                 creator.getMiddleGroup():insert(player)
-
                 timer.performWithDelay(1,function() creator.createWaterSplash(player.x,player.y) end)
-
                 audio.play(splashSound, {channel = 0})
             end
 
-            if ( M.isCollided("end"))
+            if ( findObject("end"))
             then
                 game.stopping()
                 win = true
                 game.setGame(false)
-                local blocksArray = game.getBlocksArray()
+                player:play()
 
                 player:setLinearVelocity(160,0)
                 if (level ~= 5) then
@@ -164,11 +132,13 @@ M.onCollision = function( event )
                 end
             end
 
-            if (M.isCollided("ship"))
+            if (findObject("ship"))
             then    
-                local ship = M.findObject("ship")
-                timer.performWithDelay( 500, function()             player.isVisible=false
-                    ship:setLinearVelocity(0,-50) end, 1 )
+                local ship = findObject("ship")
+                timer.performWithDelay( 500, function()             
+                    player.isVisible=false
+                    ship:setLinearVelocity(0,-50) 
+                end, 1 )
                 timer.performWithDelay( 4000, function() ship:setLinearVelocity(400,0);
                     audio.stop(32)
                     audio.play(flyingSound, {channel = 32})
@@ -176,40 +146,36 @@ M.onCollision = function( event )
 
                 audio.play(startSound, {channel = 32})
             end
-            
 
-            if ( M.isCollided("enemy"))
+            if ( findObject("enemy"))
             then
-                local enemy = M.findObject("enemy")
+                local enemy = findObject("enemy")
 
-                if (game.getGame() == true) then
+                if (game.getGame()) then
                     audio.play(trollAttack)
                     enemy:setLinearVelocity(-160,0)
                     enemy:setSequence("attak")  
                     enemy:play()
                 end
-                
             end
 
-            if ( M.isCollided("shell")) then
-                if (game.getGame() == true) then
-                    local shell = M.findObject("shell") 
-                    local array = game.getBlocksArray()
+            if ( findObject("shell")) then
+                if (game.getGame()) then
+                    local shell = findObject("shell")
                     local index = table.indexOf(array,shell )
                     table.remove(array,index)
 
                     audio.play(mineExplosion)
-                    timer.cancel( shell.destroyTimer)
+                    timer.cancel(shell.destroyTimer)
                     timer.performWithDelay(1,function() creator.createShellImpact(player.x,player.y-20) end)
                     display.remove( shell )
                     timer.performWithDelay(50,game.death)
                 end
             end
 
-            if ( M.isCollided("poison")) then
+            if ( findObject("poison")) then
                 if (game.getGame() == true) then
-                    local poison = M.findObject("poison") 
-                    local array = game.getBlocksArray()
+                    local poison = findObject("poison") 
                     local index = table.indexOf(array,poison )
                     table.remove(array,index)
 
@@ -222,25 +188,22 @@ M.onCollision = function( event )
             end
         end
 
-        if (M.isCollided("poison") and M.isCollided("block")) then
-            local poison = M.findObject("poison") 
-            local array = game.getBlocksArray()
+        if (findObject("poison") and findObject("block")) then
+            local poison = findObject("poison") 
             local index = table.indexOf(array,poison )
             table.remove(array,index)
 
             timer.cancel( poison.destroyTimer)
 
-            local block = M.findObject("block")
+            local block = findObject("block")
             display.remove( poison )
             
             timer.performWithDelay(1, function() creator.createPoisonImpact(block.x+35,block.y) end)
         end
 
-        if (M.isCollided("bullet") ) then
-            local bullet = M.findObject("bullet")
+        if (findObject("bullet") ) then
+            local bullet = findObject("bullet")
             local other = obj1.myName == "bullet" and obj2 or obj1
-
-            local array = game.getBlocksArray()
 
             local hit = false
 
@@ -254,11 +217,9 @@ M.onCollision = function( event )
                 audio.play(hitSound)
             end
 
-            if ( M.isCollided("enemy"))
+            if ( findObject("enemy"))
             then
-                local arr = creator.getDetectorsAndEnemies()
-                local enemy = M.findObject("enemy")
-
+                local enemy = findObject("enemy")
                 score = score + 125
 
                 timer.performWithDelay(1,function() creator.createFlash(bulletX+40, bulletY + 5) end)
@@ -269,21 +230,16 @@ M.onCollision = function( event )
                 enemy:play()
                 enemy.myName = "deadOrk"
                 enemy.hittable = false
-                if (game.getGame() == true) then enemy:setLinearVelocity(-160,0) end
-                local index = table.indexOf(arr,enemy)
-                local leftDetector = arr[index-1]
-                local rightDetector = arr[index+1]
-                creator.deleteDetector(leftDetector,rightDetector)
-                display.remove( leftDetector )
-                display.remove( rightDetector )
+                if (game.getGame()) then enemy:setLinearVelocity(-160,0) end
+                enemy.detector:setLinearVelocity(-160,0)
             end
 
-            if (M.isCollided("frog"))
+            if (findObject("frog"))
             then
-                local frog = M.findObject("frog")
+                local frog = findObject("frog")
 
                 score = score + 250
-                
+            
                 timer.performWithDelay(1,function() creator.createFlash(bulletX+20, bulletY + 10) end)
 
                 frog.myName = "deadFrog"
@@ -291,16 +247,14 @@ M.onCollision = function( event )
                 audio.play(frogDeath)
                 frog:play()
                 frog.hittable = false
-                if (game.getStopped()) then
-                    frog:setLinearVelocity(0,0)
-                else
-                    frog:setLinearVelocity(-160,0)
-                end
+
+                local frogSpeed = game.getStopped() and 0 or -160
+                frog:setLinearVelocity(frogSpeed,0)
             end
 
-            if (M.isCollided("larva"))
+            if (findObject("larva"))
             then
-                local larva = M.findObject("larva")
+                local larva = findObject("larva")
                 local moveY = -15
                 local moveX = 20
 
@@ -316,14 +270,14 @@ M.onCollision = function( event )
                 if (larva.xScale == 1) then larva:scale(0.85,0.85) end
             end
 
-            if ( M.isCollided("block") or M.isCollided("blockMoving") or M.isCollided("ship"))
+            if ( findObject("block") or findObject("blockMoving") or findObject("ship"))
             then
                 timer.performWithDelay(1, function() creator.createFlash(bulletX+40, bulletY+5) end)
             end
 
-            if ( M.isCollided("tank"))
+            if ( findObject("tank"))
             then
-                local tank = M.findObject("tank")
+                local tank = findObject("tank")
                 timer.performWithDelay(1,function() creator.createFlash(bulletX+40, bulletY + 5) end)
 
                 tank.fill.effect = "filter.monotone"
@@ -336,10 +290,10 @@ M.onCollision = function( event )
                 timer.performWithDelay(100,function()          
                     transition.to( tank.fill.effect, { time=200, r=1, g=1, b=1, a=0 } )
                 end, 1)
-                tank[#tank] = tank[#tank] - 1
+                tank.lives = tank.lives - 1
 
-                if (tank[#tank] < 1) then
-                    timer.cancel(tank[#tank-1])
+                if (tank.lives < 1) then
+                    timer.cancel(tank.enemyTimer)
                     tank.myName = "destroyed"
 
                     score = score + 200
@@ -358,74 +312,34 @@ M.onCollision = function( event )
             if (hit) then
                 display.remove( bullet ) 
             end
-
-        end
-
-        if ( M.isCollided("deleter"))
-        then 
-            local obj
-            if (obj1.myName == "deleter") then
-                obj = obj2
-            else
-                obj = obj1
-            end
-            if (obj.myName == "frog" or obj.myName == "enemy") then
-                timer.cancel(obj.timer)
-            end
-            local array = game.getBlocksArray()
-            local index = table.indexOf(array, obj)
-            table.remove(array,index)
-            display.remove(obj)
-
         end
             
-        if ( (M.isCollided("block") or M.isCollided("blockU")) and M.isCollided("blockMoving"))
+        if ( (findObject("block") or findObject("blockU")) and findObject("blockMoving"))
         then
-            local block = M.findObject("blockMoving")
+            local block = findObject("blockMoving")
 
-            print("block contacted before: "..tostring(block.contacted))
             if (block.contacted == false) then
                 block.contacted = true
                 game.changeBlockDir( block )
             end
-            print("block contacted after: "..tostring(block.contacted))
         end
 
-        if ( M.isCollided("block") )
+        if ( findObject("block") )
         then
 
-            if (M.isCollided("detectorL") or M.isCollided("detectorR"))
+            if (findObject("detector"))
             then
-                local detector
-                local indexToEnemy
-                local indexCollision
-                if (M.isCollided("detectorL")) 
-                then 
-                    detector = M.findObject("detectorL")
-                    indexToEnemy = 1
-                    indexCollision = 3
-                else 
-                    detector = M.findObject("detectorR")
-                    indexToEnemy = -1
-                    indexCollision = 2
-                end
-                    
-                local array = creator.getDetectorsAndEnemies()
-                local index = table.indexOf(array,detector)
-
-                array[index+indexCollision] = array[index+indexCollision]+1
+                local detector = findObject("detector")
+                detector.contacted = detector.contacted + 1
             end
 
-            if (M.isCollided("jumpDetector")) then
-                local detector = M.findObject("jumpDetector") 
-                if (detector[#detector] == 0) then
-                    detector[#detector] = 1
-                end
+            if (findObject("jumpDetector")) then
+                local detector = findObject("jumpDetector") 
+                detector.contacted = 1
             end
                 
-            if ( M.isCollided("shell")) then
-                local shell = M.findObject("shell")
-                local array = game.getBlocksArray()
+            if ( findObject("shell")) then
+                local shell = findObject("shell")
                 local index = table.indexOf(array, shell)
                 table.remove(array,index)
 
@@ -441,15 +355,14 @@ M.onCollision = function( event )
     end
 
     if ( event.phase == "ended" ) then
-        if ( M.isCollided("player") and (M.isCollided("block") or M.isCollided("blockMoving")))
+        if ( findObject("player") and (findObject("block") or findObject("blockMoving")))
         then
             blocksContacted = blocksContacted - 1
-            if (M.isCollided("block")) then playerContactedByBlock = false end
-            if (M.isCollided("blockMoving")) then playerContactedByMoving = false end
+            if (findObject("block")) then playerContactedByBlock = false else playerContactedByMoving = false end
             
             if (blocksContacted == 0) then game.setCanJump(false) end
                  
-            local player = M.findObject("player")
+            local player = findObject("player")
 
             if (win == false) then
                 local vx, vy = player:getLinearVelocity()
@@ -462,52 +375,38 @@ M.onCollision = function( event )
             end
         end
 
-        if ( M.isCollided("block") )
+        if ( findObject("block") )
         then
-            if (M.isCollided("detectorL") or M.isCollided("detectorR"))
+            if (findObject("detector"))
             then
-                local detector
-                local indexToEnemy
-                local indexCollision
+                local detector = findObject("detector")
+                detector.contacted = detector.contacted - 1
 
-                if (M.isCollided("detectorL")) then 
-                    detector = M.findObject("detectorL")
-                    indexToEnemy = 1
-                    indexCollision = 3
-                else
-                    detector = M.findObject("detectorR")
-                    indexToEnemy = -1
-                    indexCollision = 2
-                end
-
-                local array = creator.getDetectorsAndEnemies()
-                local index = table.indexOf(array,detector)
-
-                array[index+indexCollision] = array[index+indexCollision]-1
-                
                 local speed 
-                if (array[index+indexToEnemy].myName == "enemy") then speed = 60 else speed = 480 end
-                local vx,vy = array[index+indexToEnemy]:getLinearVelocity()
+                if (detector.owner.myName == "enemy") then speed = 60 else speed = 480 end
+                local vx,vy = detector.owner:getLinearVelocity()
 
                 local sign
-                if (array[index+indexCollision] == 0 ) then
-                    if (detector.myName == "detectorL") then
+                if (detector.contacted == 0 ) then
+                    if (detector.direction == "left") then
                         sign = 1
+                        detector.direction = "right"
                     else
                         sign = -1
+                        detector.direction = "left"
                     end
 
-                    array[index]:setLinearVelocity(vx+speed*sign,0)
-                    array[index+1*sign]:setLinearVelocity(vx+speed*sign,0)
-                    array[index+1*sign]:scale(-1,1)
-                    array[index+2*sign]:setLinearVelocity(vx+speed*sign,0)
+                    transition.to( detector, { time=0, x=detector.x+50*sign, y=detector.y } )
+                    detector:setLinearVelocity(vx+speed*sign,0)
+                    detector.owner:setLinearVelocity(vx+speed*sign,0)
+                    detector.owner:scale(-1,1)
                 end
             end
 
-            if (M.isCollided("jumpDetector"))
+            if (findObject("jumpDetector"))
             then
-                local detector = M.findObject("jumpDetector") 
-                detector[#detector] = 0
+                local detector = findObject("jumpDetector") 
+                detector.contacted = 0
             end
         end
     end

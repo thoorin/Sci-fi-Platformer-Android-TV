@@ -17,9 +17,6 @@ M.generateFiles = function()
         io.close()
         io.open( path, "w" )
         io.close()
-        print("Generated "..path)
-    else
-        print(path.." already exists")
     end
 
     path = system.pathForFile( fileName2, system.DocumentsDirectory )
@@ -29,9 +26,6 @@ M.generateFiles = function()
         io.close()
         io.open( path, "w" )
         io.close()
-        print("Generated "..path)
-    else
-        print(path.." already exists")
     end
 end
 
@@ -52,8 +46,6 @@ M.getRecord = function(lvl)
         io.close( file )
     end
 
-    print("All stored records are: ")
-    for i in ipairs(records) do print(records[i]) end
     file = nil
 
     return records[level]
@@ -74,24 +66,13 @@ M.writeRecord = function(record)
         table.insert(records,line)
     end
 
-    print("Records before writing")
-    for i in ipairs(records) do print(records[i]) end
-    print("Level is "..level)
-    print("records[level] "..tostring(records[level]))
 
     if (records[level]~=nil) then
         table.remove(records,level)
     end
 
-    print("Records after deleting records[leve]")
-    for i in ipairs(records) do print(records[i]) end
-
     table.insert(records,level,record)
 
-    print("After updating new record")
-    for i in ipairs(records) do print(records[i]) end
-
-        --file:write( record )
     io.close( file )
     end
 
@@ -102,7 +83,6 @@ M.writeRecord = function(record)
     else
 
     for i in ipairs(records) do
-        print("Level "..i.. "record is "..records[i])
         file:write( records[i] )
         file:write( "\n" )
     end
@@ -126,7 +106,6 @@ M.getCurrentLevel = function()
 
     file = nil
 
-    print("Current level is "..tostring(currentLevel))
     if (currentLevel == nil) then
         currentLevel = 1
     end
@@ -145,7 +124,6 @@ M.updateCurrentLevel = function()
         print( "File error: " .. errorString )
     else
 
-    print("Updated level is "..tostring(currentLevel))
     file:write( currentLevel )
 
     io.close( file )

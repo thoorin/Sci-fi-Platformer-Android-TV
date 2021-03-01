@@ -65,7 +65,7 @@ function scene:show( event )
 	if ( phase == "will" ) then
         -- Code here runs when the scene is still off screen (but is about to come on screen)
         Runtime:addEventListener( "collision", collisionHandler.onCollision )
-        Runtime:addEventListener( "key", game.playerEvent )
+        Runtime:addEventListener( "touch", game.playerEvent )
 
         gameLoopTimer = timer.performWithDelay( 25, game.gameLoop, 0 )
 
@@ -74,32 +74,16 @@ function scene:show( event )
                 creator = require("creator")
                 creator.setGame(game)
 
-                builder.setGame(game)
-                builder.setCreator(creator)
-                builder.setCollisionHandler(collisionHandler)
-                builder.createLevel(composer.getVariable("lvl"))
+                builder.setUp(creator, game, collisionHandler, composer.getVariable("lvl"))
 
                 musicTrack = composer.getVariable("lvl") > 5 and audio.loadStream( "dessert_song.MP3") or audio.loadStream( "s6.mp3")
 
-                game.setComposer(composer)
-                game.setCreator(creator)
-                game.setBlocks(creator.getBlocksArray())
-                game.setInterface(interface)
-                --game.movePlayer(0)
-                --game.moveForward(8000)
+                game.setUp(composer,creator,creator.getBlocksArray(),interface)
                 
-                interface.setGame(game)
-                interface.setCreator(creator)
-                interface.setBuilder(builder)
-                interface.setCollisionHandler(collisionHandler)
-                interface.setFileHandler(fileHandler)
+                interface.setUp(game,creator,builder,collisionHandler,fileHandler)
+                interface.pauseIcon()
 
-                collisionHandler.setGame(game)
-                collisionHandler.setCreator(creator)
-                collisionHandler.setInterface(interface)
-                collisionHandler.setFrontgroup(creator.getFrontGroup())
-                collisionHandler.setBlocksContacted(0)
-                collisionHandler.setScore(0)
+                collisionHandler.setUp(game,creator,interface,creator.getFrontGroup(),0,0)
 
                 game.moving()                  
                 audio.play( musicTrack, { channel=1, loops=-1 } )
@@ -125,7 +109,7 @@ function scene:hide( event )
         blocksArray = nil
 
         Runtime:removeEventListener( "collision", collisionHandler.onCollision )
-        Runtime:removeEventListener( "key", game.playerEvent )
+        Runtime:removeEventListener( "touch", game.playerEvent )
         package.loaded["creator"] = nil
         audio.stop(1)
         
