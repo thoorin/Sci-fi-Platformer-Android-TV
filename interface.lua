@@ -254,7 +254,86 @@ M.winScreen = function()
     continueBtn.y = display.contentCenterY + 120
     table.insert( elements, continueBtn)
 
-    continueBtn:addEventListener( "tap", nextLevel )
+    local function onKeyEvent( event )
+        if (event.phase == "down") then
+            if (event.keyName == "right") then
+                if (selectorPosition < 2) then
+                    selectorPosition = selectorPosition + 1
+                end
+            elseif (event.keyName == "left") then
+                if (selectorPosition > 0) then
+                    selectorPosition = selectorPosition - 1
+                end
+            elseif (event.keyName == "center") then
+                if (selectorPosition == 0) then
+                    timer.cancelAll()
+                    creator.cancelEnemyTimers()
+                    composer.gotoScene("map")
+
+                    for i in ipairs(elements) do 
+                        display.remove(elements[i])
+                    end
+            
+                    composer.removeScene( "level", true )
+                    
+                    audio.stop(31)
+                    audio.play(clickSound)
+                elseif (selectorPosition == 1) then
+                    creator.cancelEnemyTimers()
+                    
+                    if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
+                    game.setCanJump(false)
+                    audio.stop(31)
+                    game.destroyBlocks()
+                    creator.destroyBlocks()
+                    collisionHandler.destroyParticles()
+
+                    timer.cancelAll()
+                
+                    for i in ipairs(elements) do 
+                        display.remove(elements[i])
+                    end
+
+                    collisionHandler.setBlocksContacted(0)
+                    collisionHandler.setScore(0)
+
+                    game.setBlocks(creator.getBlocksArray())
+
+                    game.setGame(true)
+
+                    composer.removeScene("level",true)
+                    composer.gotoScene("level")
+                    audio.play(clickSound)
+                else 
+                    nextLevel()
+                end
+                Runtime:removeEventListener( "key", onKeyEvent )
+            end
+        end
+        if (selectorPosition == 0) then
+            closeBtn.fill.effect = "filter.brightness"
+            closeBtn.fill.effect.intensity = 0.4
+            replayBtn.fill.effect = "filter.brightness"
+            replayBtn.fill.effect.intensity = 0
+            continueBtn.fill.effect = "filter.brightness"
+            continueBtn.fill.effect.intensity = 0
+        elseif (selectorPosition == 1) then
+            replayBtn.fill.effect = "filter.brightness"
+            replayBtn.fill.effect.intensity = 0.4
+            closeBtn.fill.effect = "filter.brightness"
+            closeBtn.fill.effect.intensity = 0
+            continueBtn.fill.effect = "filter.brightness"
+            continueBtn.fill.effect.intensity = 0
+        else 
+            continueBtn.fill.effect = "filter.brightness"
+            continueBtn.fill.effect.intensity = 0.4
+            closeBtn.fill.effect = "filter.brightness"
+            closeBtn.fill.effect.intensity = 0
+            replayBtn.fill.effect = "filter.brightness"
+            replayBtn.fill.effect.intensity = 0
+        end
+    end
+    Runtime:addEventListener("key", onKeyEvent)
 end
 
 M.deathScreen = function()
@@ -269,6 +348,74 @@ M.deathScreen = function()
     continueBtn.x = display.contentWidth-display.actualContentWidth*0.5 + 140
     continueBtn.y = display.contentCenterY + 120
     table.insert( elements, continueBtn)
+
+    local function onKeyEvent( event )
+        if (event.phase == "down") then
+            if (event.keyName == "right") then
+                if (selectorPosition == 0) then
+                    selectorPosition = selectorPosition + 1
+                end
+            elseif (event.keyName == "left") then
+                if (selectorPosition == 1) then
+                    selectorPosition = selectorPosition - 1
+                end
+            elseif (event.keyName == "center") then
+                if (selectorPosition == 0) then
+                    timer.cancelAll()
+                    creator.cancelEnemyTimers()
+                    composer.gotoScene("map")
+
+                    for i in ipairs(elements) do 
+                        display.remove(elements[i])
+                    end
+            
+                    composer.removeScene( "level", true )
+                    
+                    audio.stop(31)
+                    audio.play(clickSound)
+                else 
+                    creator.cancelEnemyTimers()
+                    
+                    if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
+                    game.setCanJump(false)
+                    audio.stop(31)
+                    game.destroyBlocks()
+                    creator.destroyBlocks()
+                    collisionHandler.destroyParticles()
+
+                    timer.cancelAll()
+                
+                    for i in ipairs(elements) do 
+                        display.remove(elements[i])
+                    end
+
+                    collisionHandler.setBlocksContacted(0)
+                    collisionHandler.setScore(0)
+
+                    game.setBlocks(creator.getBlocksArray())
+
+                    game.setGame(true)
+
+                    composer.removeScene("level",true)
+                    composer.gotoScene("level")
+                    audio.play(clickSound)
+                end
+                Runtime:removeEventListener( "key", onKeyEvent )
+            end
+        end
+        if (selectorPosition == 0) then
+            closeBtn.fill.effect = "filter.brightness"
+            closeBtn.fill.effect.intensity = 0.4
+            replayBtn.fill.effect = "filter.brightness"
+            replayBtn.fill.effect.intensity = 0
+        elseif (selectorPosition == 1) then
+            replayBtn.fill.effect = "filter.brightness"
+            replayBtn.fill.effect.intensity = 0.4
+            closeBtn.fill.effect = "filter.brightness"
+            closeBtn.fill.effect.intensity = 0
+        end
+    end
+    Runtime:addEventListener("key", onKeyEvent)
 end
 
 M.deleteMainGroup = function()
