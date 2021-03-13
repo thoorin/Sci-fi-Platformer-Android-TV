@@ -186,18 +186,26 @@ end
 
 M.playerEvent = function( event )
     if (game == true) then
-        if event.phase == "began" then
+        if event.phase == "down" then
             pressed = true
-            if (event.x < display.contentWidth-display.actualContentWidth*0.5 and (event.x > 300 or event.y > 80)) then
+            if (event.keyName == "left") then
                 M.jump()
-            elseif (shoots == false and event.x > display.contentWidth-display.actualContentWidth*0.5) then
+            elseif (shoots == false and event.keyName == "right") then
                     M.shoot()
                     shoots = true
             end
         end
 
-        if event.phase == "ended" then
+        if event.phase == "up" then
             pressed = false
+        end
+    end
+
+    if (event.keyName == event.phase) then
+        if (paused) then
+            play()
+        else
+            pause()
         end
     end
 end

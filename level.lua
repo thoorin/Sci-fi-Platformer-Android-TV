@@ -81,7 +81,6 @@ function scene:show( event )
                 game.setUp(composer,creator,creator.getBlocksArray(),interface)
                 
                 interface.setUp(game,creator,builder,collisionHandler,fileHandler)
-                interface.pauseIcon()
 
                 collisionHandler.setUp(game,creator,interface,creator.getFrontGroup(),0,0)
 
