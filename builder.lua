@@ -140,7 +140,7 @@ local function createLevel0()
     g.setPlayer(c.createPlayer(100))
     top = display.contentHeight-64
 
-    createSetOfBlocks(0,top,140)
+    createSetOfBlocks(0,top,180)
 
     c.createTree1(200, top)
     c.createTree2(240, top)
@@ -215,7 +215,7 @@ local function createLevel0()
     c.createMushroom1(2855,top)
     c.createTree1(2990,top)
 
-    c.createSign2(3200, top)
+    c.createSign2(3900, top)
 
     c.createStone(3420, top)
     c.createBush1(3470, top)
@@ -225,6 +225,26 @@ local function createLevel0()
     c.createFlower(3700, top)
     c.createFlowerReverse(3720, top)
     c.createFlower(3750, top)
+
+    c.createSmallTree1(4035,top)
+    c.createTree1(4000,top)
+    c.createMushroom1(3990,top)
+    c.createTree2(4100,top)
+    c.createTree1(4070,top)
+    c.createTree1(4040,top)
+
+    c.createSmallTree2(4400,top)
+    c.createTree2(4370, top)
+    c.createTree1(4335, top)
+    c.createStone(4455,top)
+    c.createBigBush1(4430,top)
+    c.createTree2(4460,top)
+    c.createTree1(4430, top)
+    c.createTree1(4500,top)
+    c.createSmallTree1(4550,top)
+    c.createTree2(4580,top)
+    c.createMushroom1(4565,top)
+
     c.createTouch()
 end
 
@@ -2247,9 +2267,8 @@ local function createLevel10()
         c.createGrass2(start + 890, top - 128)
         c.createGrass2(start + 900, top - 128)
         
-
+        c.createEnemy(start + 750, top-128)
         c.createFrog(start + 600, top-128)
-        c.createFrog(start + 750, top-128)
 
         c.createDesertTree(start + 200, top)
         c.createGrass1(start + 38, top)

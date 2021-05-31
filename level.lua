@@ -65,7 +65,7 @@ function scene:show( event )
 	if ( phase == "will" ) then
         -- Code here runs when the scene is still off screen (but is about to come on screen)
         Runtime:addEventListener( "collision", collisionHandler.onCollision )
-        Runtime:addEventListener( "touch", game.playerEvent )
+        Runtime:addEventListener( "key", game.playerEvent )
 
         gameLoopTimer = timer.performWithDelay( 25, game.gameLoop, 0 )
 
@@ -108,7 +108,7 @@ function scene:hide( event )
         blocksArray = nil
 
         Runtime:removeEventListener( "collision", collisionHandler.onCollision )
-        Runtime:removeEventListener( "touch", game.playerEvent )
+        Runtime:removeEventListener( "key", game.playerEvent )
         package.loaded["creator"] = nil
         audio.stop(1)
         

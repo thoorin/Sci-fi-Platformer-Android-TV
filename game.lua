@@ -16,6 +16,7 @@ local creator
 local stopped
 local pressed
 local game = true
+local pause = false
 
 local frogAttack = audio.loadSound( "frog_attack.mp3" )
 local blastSound = audio.loadSound( "blast.mp3" )
@@ -28,7 +29,7 @@ M.resetVariables = function()
     canJump, ply, shoots, stopped, game = false, nil, false, false, true
 end
 
-M.setUpGame = function( comp,c,bA,i)
+M.setUp = function( comp,c,bA,i)
     composer, creator, blocksArray, interface = comp, c, bA, i
 end
 
@@ -42,6 +43,10 @@ end
 
 M.setGame = function( gameVal )
     game = gameVal
+end
+
+M.setBlocks = function( bA )
+    blocksArray = bA
 end
 
 M.setShoots = function( val )
@@ -63,7 +68,6 @@ end
 M.setCanJump = function( val )
     canJump = val
 end
-
 
 M.destroyBlocks = function()
     for i in ipairs(blocksArray) do display.remove(blocksArray[i]) end
@@ -95,6 +99,12 @@ M.stopping = function()
 end
 
 M.pause = function()
+    ply:pause()
+    local vx,vy = ply:getLinearVelocity()
+    ply.lastVelocity = vy
+    ply:setLinearVelocity(0,0)
+    ply.gravityScale = 0
+               
     for i in ipairs(blocksArray) do 
         local element = blocksArray[i]
         local vx,vy = element:getLinearVelocity()
@@ -112,9 +122,17 @@ M.pause = function()
         element.lastVelocityY = vy
         element:setLinearVelocity( 0, 0) 
     end
+
+    timer.pauseAll()
+    pause = true
 end
 
 M.unpause = function()
+    ply:play()
+    ply:setLinearVelocity(0,ply.lastVelocity+0.1)
+    ply.gravityScale = 1
+    shoots = false
+        
     for i in ipairs(blocksArray) do 
         local element = blocksArray[i]
         local vx,vy = element.lastVelocityX,element.lastVelocityY
@@ -128,6 +146,9 @@ M.unpause = function()
         end
         element:setLinearVelocity( vx, vy) 
     end
+
+    timer.resumeAll()
+    pause = false
 end
 
 M.death = function()   
@@ -202,10 +223,10 @@ M.playerEvent = function( event )
     end
 
     if (event.keyName == event.phase) then
-        if (paused) then
-            play()
+        if (pause) then
+            M.unpause()
         else
-            pause()
+            M.pause()
         end
     end
 end
@@ -310,7 +331,7 @@ end
 M.spriteListenerLarva = function( event )
     local larva = event.target 
     
-    if (larva.x > 0 and larva.x < 420 and larva.sequence == "idle") then
+    if (larva.x > 0 and larva.x < composer.getVariable( "playerStartingPosition") + 100 and larva.sequence == "idle") then
         larva:setSequence("attack")
         larva:play()
         larva.x = larva.x-15

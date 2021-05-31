@@ -153,7 +153,6 @@ M.winScreen = function()
             elseif (event.keyName == "center") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
-                    creator.cancelEnemyTimers()
                     composer.gotoScene("map")
 
                     for i in ipairs(elements) do 
@@ -165,9 +164,6 @@ M.winScreen = function()
                     audio.stop(31)
                     audio.play(clickSound)
                 elseif (selectorPosition == 1) then
-                    creator.cancelEnemyTimers()
-                    
-                    if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
                     game.setCanJump(false)
                     audio.stop(31)
                     game.destroyBlocks()
@@ -248,7 +244,6 @@ M.deathScreen = function()
             elseif (event.keyName == "center") then
                 if (selectorPosition == 0) then
                     timer.cancelAll()
-                    creator.cancelEnemyTimers()
                     composer.gotoScene("map")
 
                     for i in ipairs(elements) do 
@@ -260,9 +255,6 @@ M.deathScreen = function()
                     audio.stop(31)
                     audio.play(clickSound)
                 else 
-                    creator.cancelEnemyTimers()
-                    
-                    if (creator.getTrollWalk() == true) then audio.pause(creator.getTrollChannel())end
                     game.setCanJump(false)
                     audio.stop(31)
                     game.destroyBlocks()

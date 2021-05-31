@@ -11,12 +11,10 @@ local playerStartingPosition = display.actualContentWidth/display.actualContentH
 composer.setVariable( "playerStartingPosition", playerStartingPosition )
 
 display.setStatusBar(display.HiddenStatusBar);
-native.setProperty( "androidSystemUiVisibility", "immersiveSticky" )
 
 function onSystemEvent( event )
     if event.type == "applicationResume" then
         display.setStatusBar(display.HiddenStatusBar);
-        native.setProperty( "androidSystemUiVisibility", "immersiveSticky" )
     end
 end
 Runtime:addEventListener("system", onSystemEvent)

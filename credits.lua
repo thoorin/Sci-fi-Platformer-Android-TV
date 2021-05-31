@@ -23,10 +23,12 @@ local function inAndOut( group )
     delayTime = delayTime + 7400
 end
 
-local function tapEvent()
-    composer.gotoScene("map")
-    Runtime:removeEventListener( "touch", tapEvent)
-    composer.removeScene( "credits", true )
+local function keyEvent( event )
+    if (event.phase == "down") then
+        composer.gotoScene("map")
+        Runtime:removeEventListener( "key", keyEvent)
+        composer.removeScene( "credits", true )
+    end
 end
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -73,7 +75,7 @@ function scene:show( event )
             transition.fadeIn(assets, {delay = delayTime, time = 1400})
             transition.fadeOut(assets,{delay = delayTime + 6000, time = 1400})
         
-            local asset1 = display.newText(sceneGroup, "Player by dasidsaidsij\n\nForest tileset and Desert tileset \nby Zuhria Alfitra from gameart2d.com\n\n", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY+50, "PermanentMarker-Regular.ttf",30)  
+            local asset1 = display.newText(sceneGroup, "Player by overcrafted\n\nForest tileset and Desert tileset \nby Zuhria Alfitra from gameart2d.com\n\n", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY+50, "PermanentMarker-Regular.ttf",30)  
             asset1:setTextColor( 0, 0, 0)
             asset1.alpha = 0
         
@@ -129,7 +131,7 @@ function scene:show( event )
 
             timer.performWithDelay(delayTime, function() composer.gotoScene("map") end)
 
-            Runtime:addEventListener( "touch", tapEvent)
+            Runtime:addEventListener( "key", keyEvent)
 
         elseif ( phase == "did" ) then
         end

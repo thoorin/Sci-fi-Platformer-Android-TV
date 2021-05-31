@@ -16,8 +16,8 @@ function getSceneGroup()
 end
 
 local ar = {}
-local maxRecords = {0,200,650,1025,1275,300,650,850,1500,2475}
-
+local maxRecords = {0,200,650,1025,1275,300,650,850,1500,2350}
+local selector
 local selectedLevel = 1
 
 local indentOFElement = display.actualContentWidth/5.45
@@ -48,9 +48,6 @@ end
 function createMap( environment, selectorPosition )
         cleanMap()
         local curLevel = fileHandler.getCurrentLevel()
-
-        print(selectedLevel)
-        print("environment "..environment)
 
         local arrow
         local j

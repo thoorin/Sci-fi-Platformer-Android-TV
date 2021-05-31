@@ -4,9 +4,6 @@ local fileHandler = require( "fileHandler" )
 local scene = composer.newScene()
 clickSound = audio.loadSound( "click.ogg" )
 
-
-
-
 local function textChangeSize(text,increase)
         local increaseNext = 1
         if (increase == 1) then
@@ -37,27 +34,22 @@ function scene:create( event )
     display.setDefault( "background", 1, 1, 1 )
 
     local function onKeyEvent( event )
- 
         local path = system.pathForFile( "currentLevel.txt", system.DocumentsDirectory )
         local file = io.open( path )
 
         if not file then
             composer.gotoScene("level")
-            composer.setVariable("lvl",0);
+            composer.setVariable("lvl",0)
         else 
             composer.gotoScene("map")
         end
 
         audio.play(clickSound) 
-
         Runtime:removeEventListener( "key", onKeyEvent )
-     
-        -- IMPORTANT! Return false to indicate that this app is NOT overriding the received key
-        -- This lets the operating system execute its default handling of the key
+
         return false
     end
      
-    -- Add the key event listener
     Runtime:addEventListener( "key", onKeyEvent )
 
     local title = display.newRect( sceneGroup,600, 0, 1080, 180 )
@@ -68,7 +60,7 @@ function scene:create( event )
         background.x = display.contentCenterX
         background.y = display.contentCenterY
 
-        local tapStartText = display.newEmbossedText(sceneGroup, "press any key", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY + 170, "PermanentMarker-Regular.ttf", 45)   
+        local tapStartText = display.newEmbossedText(sceneGroup, "press any key", display.contentWidth-display.actualContentWidth*0.5, display.contentCenterY + 170, "PermanentMarker-Regular.ttf", 45) 
         tapStartText:setTextColor( 1, 1, 1 )
 
         textChangeSize(tapStartText,1)
@@ -103,7 +95,6 @@ end
 -- hide()
 function scene:hide( event )
 	local phase = event.phase
-
 
 	if ( phase == "will" ) then
         -- Code here runs when the scene is on screen (but is about to go off screen)

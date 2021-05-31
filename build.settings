@@ -24,6 +24,11 @@ settings =
 		{
 			"android.permission.INTERNET",
 		},
+		usesFeatures =
+		{
+			{ name = "android.hardware.touchscreen", required = false },
+			{ name = "android.software.leanback", required = true}
+		}
 	},
 
 	--
@@ -52,9 +57,6 @@ settings =
 	--
 	excludeFiles =
 	{
-		-- Exclude unnecessary files for each platform
-		all = { "Icon.png", "Icon-*dpi.png", "Images.xcassets", },
-		android = { "LaunchScreen.storyboardc", },
 	},
 
 }
