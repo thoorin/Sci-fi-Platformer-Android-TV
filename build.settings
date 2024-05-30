@@ -18,6 +18,8 @@ settings =
 	--
 	android =
 	{
+                minSdkVersion = "33",
+                largeHeap = true,
 		supportsTV = true,
         	isGame = true,
 		usesPermissions =
@@ -28,7 +30,7 @@ settings =
 		{
 			{ name = "android.hardware.touchscreen", required = false },
 			{ name = "android.software.leanback", required = true}
-		}
+		},
 	},
 
 	--
